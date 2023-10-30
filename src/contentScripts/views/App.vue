@@ -3,38 +3,36 @@ import 'uno.css'
 
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
 
-const clickCount = ref(1)
-const doContentScriptToBackground = async () => {
-  // const res = document.getElementById('item1477490099')
+const copy = (str) => {
+  let textarea = null
+  !textarea && (textarea = document.createElement('textarea'))
   // console.log(res)
-  const rz = await sendMessage('content-scipt=>background', {
-    count: clickCount.value,
-  }, 'background')
-  clickCount.value++
-
-  // console.log('====> doContentScriptToBackground sendMessage rz :', rz)
+  textarea.value = str
+  textarea.style.position = 'fixed'
+  textarea.style.top = 0
+  textarea.style.left = 0
+  textarea.style.opacity = 0
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
 }
 
 onMessage('content-scipt<=background', async (msg) => {
-  // eslint-disable-next-line no-console
-  console.log('====> content-scipt<=background msg :', msg)
-  return { cool: 'Got you! I am cool from content-script' }
-})
-
-const doContentScriptToPopup = async () => {
-  const rz = await sendMessage('content-scipt=>popup', {
-    count: clickCount.value,
-  }, 'popup')
-  clickCount.value++
-  // eslint-disable-next-line no-console
-  console.log('====> doContentScriptToPopup sendMessage rz :', rz)
-}
-
-onMessage('content-scipt<=popup', async (msg) => {
-  // eslint-disable-next-line no-console
-  console.log('====> content-scipt<=popup msg :', msg)
+  const { data } = msg
+  copy(data.str)
   return { cool: 'Got you popup! I am cool from content-script' }
 })
+const getDom = async () => {
+  const a = {}
+  document.querySelectorAll('.td-subject >a').forEach((item) => {
+    const title = item.title
+    const badKeyList = ['精油', '精华', '香水', '车走', '面霜', '申删', '母婴', '隔离', '美瞳']
+    if (title.includes('作业') && !badKeyList.some(key => title.includes(key)))
+      a[`${Object.keys(a).length + 1}. ${title}`] = item.href
+  })
+  sendMessage('content-scipt=>background', a, 'background')
+}
 </script>
 
 <template>
@@ -45,17 +43,8 @@ onMessage('content-scipt<=popup', async (msg) => {
       m="y-auto r-2"
       transition="opacity duration-300"
     >
-      <h1 class="text-lg">
-        Vitesse WebExt {{ clickCount }}
-      </h1>
-      <SharedSubtitle />
-      <button @click="doContentScriptToBackground">
-        content-scipt=>background
-      </button>
-      <br>
-      <br>
-      <button @click="doContentScriptToPopup">
-        content-scipt=>popup
+      <button @click="getDom">
+        get DOM
       </button>
     </div>
   </div>

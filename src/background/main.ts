@@ -20,6 +20,15 @@ browser.tabs.onActivated.addListener(async ({ tabId }) => {
   currentTabId.value = tabId
 })
 
+const dealData = (info) => {
+  const jsonStr = JSON.stringify(info, null, 1)
+  const list = jsonStr.split('\n')
+  list.shift()
+  list.pop()
+  // TODO: 存储 indexdb or online db
+  return list.join('\n').replace(/"|【作业】/g, '').replace(/,/g, '\n').replace(/(\s)(\d)/g, '$2')
+}
+
 onMessage('content-scipt=>background', async (msg) => {
   // eslint-disable-next-line no-console
   console.log('====> msg :', msg)
@@ -27,9 +36,9 @@ onMessage('content-scipt=>background', async (msg) => {
   const { sender, data } = msg
   // eslint-disable-next-line no-console
   console.log('====> keys, sender, data :', keys, sender, data)
-
+  const res = dealData(data)
   const rz = await sendMessage('content-scipt<=background', {
-    time: new Date(),
+    str: res,
   }, `content-script@${currentTabId.value}`)
   // eslint-disable-next-line no-console
   console.log('====> response from content-sciript', rz)
