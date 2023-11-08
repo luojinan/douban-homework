@@ -39,16 +39,18 @@ const getDom = async () => {
 
 onMounted(() => {
   // 判断详情页，自动remove无效评论 - 更适合油猴插件
+  let count = 0
   if (location.pathname.includes('/group/topic/')) {
     document.querySelectorAll('.reply-content').forEach((item) => {
       const filterText = /(d{2,})|谢谢姐妹|滴滴|谢谢|!|！|\s/gi // 过滤2个以上的d和谢谢
       const content = item.innerText.replace(filterText, '')
-      if (!content || ['d', 'D', '牛', '，'].includes(content))
+      if (!content || ['d', 'D', '牛', '，'].includes(content)) {
+        count++
         item.parentElement?.parentElement?.remove()
-      else
-        item.innerText = content
+      }
+      else { item.innerText = content }
     })
-    toastMsg.value = '✨ 已移除无效评论'
+    toastMsg.value = `✨ 已移除无效评论${count}条`
   }
 })
 </script>
