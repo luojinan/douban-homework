@@ -18,9 +18,12 @@ const copy = (str) => {
   document.body.removeChild(textarea)
 }
 
+const toastMsg = ref('')
+
 onMessage('content-scipt<=background', async (msg) => {
   const { data } = msg
   copy(data.str)
+  toastMsg.value = '🎉 已复制列表到剪贴板'
   return { cool: 'Got you popup! I am cool from content-script' }
 })
 const getDom = async () => {
@@ -33,16 +36,34 @@ const getDom = async () => {
   })
   sendMessage('content-scipt=>background', a, 'background')
 }
+
+onMounted(() => {
+  // 判断详情页，自动remove无效评论 - 更适合油猴插件
+  if (location.pathname.includes('/group/topic/')) {
+    document.querySelectorAll('.reply-content').forEach((item) => {
+      const filterText = /(d{2,})|谢谢姐妹|滴滴|谢谢|!|！|\s/gi // 过滤2个以上的d和谢谢
+      const content = item.innerText.replace(filterText, '')
+      if (!content || ['d', 'D', '牛', '，'].includes(content))
+        item.parentElement?.parentElement?.remove()
+      else
+        item.innerText = content
+    })
+    toastMsg.value = '✨ 已移除无效评论'
+  }
+})
 </script>
 
 <template>
-  <div class="flex font-sans m-5 top-0 left-0 leading-1em z-100 fixed items-end select-none">
+  <div class="flex font-sans m-5 bottom-10 right-0 leading-1em z-100 fixed items-end select-none">
     <div
       class="bg-white rounded-lg h-min shadow w-max text-gray-800"
       p="x-4 y-2"
       m="y-auto r-2"
       transition="opacity duration-300"
     >
+      <p v-if="toastMsg">
+        {{ toastMsg }}
+      </p>
       <button @click="getDom">
         get DOM
       </button>
