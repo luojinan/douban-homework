@@ -41,6 +41,22 @@ onMounted(() => {
   // 判断详情页，自动remove无效评论 - 更适合油猴插件
   let count = 0
   if (location.pathname.includes('/group/topic/')) {
+    // 自动跳转评论最后一页
+    if (!location.search.includes('start=')) {
+      // 获取class为paginator的div
+      const divPaginator = document.querySelector('.paginator')
+      if (divPaginator) {
+        // 获取div下的所有a标签
+        const aTags = divPaginator.getElementsByTagName('a')
+        // 获取最后一个a标签
+        const lastATag = aTags[aTags.length - 2]
+        // 触发a标签的点击事件
+        lastATag.click()
+        return
+      }
+    }
+
+    // 移除无效评论dom
     document.querySelectorAll('.reply-content').forEach((item) => {
       const filterText = /(d{2,})|谢谢姐妹|滴滴|谢谢|!|！|\s/gi // 过滤2个以上的d和谢谢
       const content = item.innerText.replace(filterText, '')
